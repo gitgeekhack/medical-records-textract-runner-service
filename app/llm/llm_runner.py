@@ -18,7 +18,7 @@ async def create_pod(message_body, logger):
     v1 = client.CoreV1Api()
 
     # TODO: Update pod manifest file as per the requirement
-    pod_manifest = json.load(open('/home/darshan/Music/mrs-runner-service/app/llm/pod_manifest.json', 'r'))
+    pod_manifest = json.load(open('llm/pod_manifest.json', 'r'))
 
     for env_variable in pod_manifest['spec']['containers'][0]['env']:
         if env_variable['name'] == 'INPUT_MESSAGE':
