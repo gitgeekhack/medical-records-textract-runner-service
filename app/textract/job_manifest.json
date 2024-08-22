@@ -1,0 +1,26 @@
+{
+  "apiVersion": "batch/v1",
+  "kind": "Job",
+  "metadata": {
+    "name": "example-job"
+  },
+  "spec": {
+    "template": {
+      "spec": {
+        "containers": [
+          {
+            "name": "example",
+            "image": "example-image",
+            "env": [
+              {
+                "name": "INPUT_MESSAGE",
+                "value": ""
+              }
+            ]
+          }
+        ],
+        "restartPolicy": "Never"
+      }
+    }
+  }
+}
