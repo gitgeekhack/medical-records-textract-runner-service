@@ -8,5 +8,5 @@ RUN pip install --upgrade pip==24.2 && \
 
 COPY ./app ./app
 
-ENV PYTHONPATH=/runner-service
+ENV PYTHONPATH=/llm-runner-service
 CMD ["python", "app/llm/llm_runner.py"]
