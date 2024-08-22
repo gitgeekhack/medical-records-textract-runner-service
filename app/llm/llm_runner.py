@@ -14,19 +14,19 @@ config.load_kube_config()
 queue_url = AWS.SQS.COMPLETED_TEXTRACT_QUEUE
 
 
-async def create_pod(message_body, logger):
-    v1 = client.CoreV1Api()
+async def create_job(message_body, logger):
+    batch_v1 = client.BatchV1Api()
 
-    # TODO: Update pod manifest file as per the requirement
-    pod_manifest = json.load(open('llm/pod_manifest.json', 'r'))
+    # TODO: Update job manifest file as per the requirement
+    job_manifest = json.load(open('llm/job_manifest.json', 'r'))
 
-    for env_variable in pod_manifest['spec']['containers'][0]['env']:
+    for env_variable in job_manifest['spec']['template']['spec']['containers'][0]['env']:
         if env_variable['name'] == 'INPUT_MESSAGE':
             env_variable['value'] = json.dumps(message_body)
 
     namespace = 'default'  # TODO: Update namespace as per the requirement
-    v1.create_namespaced_pod(namespace=namespace, body=pod_manifest)
-    logger.info(f'Pod created in namespace: {namespace}')
+    batch_v1.create_namespaced_job(namespace=namespace, body=job_manifest)
+    logger.info(f'Job created in namespace: {namespace}')
 
 
 async def runner():
@@ -43,7 +43,7 @@ async def runner():
         logger = get_cloudwatch_logger(project_id=project_id, document_name=document_name,
                                        log_stream_name=AWS.CloudWatch.LLM_RUNNER_STREAM)
         logger.info(f'Message received from queue: {queue_url.split("/")[-1]}')
-        await create_pod(message_body, logger)
+        await create_job(message_body, logger)
         await sqs_helper.delete_message(queue_url, receipt_handle)
         sys.stdout.flush()
 
