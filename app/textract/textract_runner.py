@@ -4,13 +4,12 @@ import os.path
 import sys
 import time
 
-from kubernetes import client, config
+from kubernetes import client
 
 from app.common.cloudwatch_helper import get_cloudwatch_logger
 from app.common.sqs_helper import SQSHelper
 from app.constant import AWS
 
-config.load_kube_config()
 queue_url = AWS.SQS.START_TEXTRACT_QUEUE
 
 
