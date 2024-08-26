@@ -3,14 +3,13 @@ import json
 import sys
 import time
 
-from kubernetes import client, config
+from kubernetes import client
 
 from app.common.cloudwatch_helper import get_cloudwatch_logger
 from app.common.sqs_helper import SQSHelper
 from app.common.utils import get_project_id_and_document
 from app.constant import AWS
 
-config.load_kube_config()
 queue_url = AWS.SQS.COMPLETED_TEXTRACT_QUEUE
 
 
