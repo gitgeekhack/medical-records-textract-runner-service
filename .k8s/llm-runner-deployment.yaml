@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: llm-runner
+  namespace: staging
+  labels:
+    app: llm-runner
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: llm-runner
+  
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+
+  template:
+    metadata:
+      name: llm-runner
+      labels:
+        app: llm-runner
+    spec:
+      containers:
+      - name: llm-runner
+        image: DOCKER_IMAGE
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 6000
+          name: llm-runner
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "256m"
+          limits:
+            memory: "512Mi"
+            cpu: "256m"
