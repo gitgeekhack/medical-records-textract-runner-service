@@ -15,7 +15,7 @@ from app.constant import AWS
 queue_url = AWS.SQS.START_TEXTRACT_QUEUE
 
 # Get namespace from environment variable
-NAMESPACE = os.getenv('ENVIRONMENT', 'default')
+NAMESPACE = os.getenv('ENVIRONMENT')
 
 async def create_job(message_body, logger):
     batch_v1 = client.BatchV1Api()
@@ -37,6 +37,11 @@ async def create_job(message_body, logger):
 async def runner():
     sqs_helper = SQSHelper()
     logger = get_cloudwatch_logger(log_stream_name=AWS.CloudWatch.TEXTRACT_RUNNER_STREAM)
+
+    if not NAMESPACE:
+        logger.info('Configuration incomplete. Please configure ENVIRONMENT variable.')
+        exit(0)
+
     logger.info(f'Reading messages from queue: {queue_url.split("/")[-1]}')
     while True:
         message_body, receipt_handle = await sqs_helper.consume_message(queue_url)
