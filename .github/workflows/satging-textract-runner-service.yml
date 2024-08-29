@@ -55,5 +55,5 @@ jobs:
         IMAGE_TAG: ${{ steps.commit.outputs.short }}
       run: |
         echo "Deploying to EKS..."
-        sed -i "s|DOCKER_IMAGE|${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}|g" .k8s/textract-runner-deployment.yam
+        sed -i "s|DOCKER_IMAGE|${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}|g" .k8s/textract-runner-deployment.yaml
         kubectl apply -f .k8s/textract-runner-deployment.yaml
