@@ -28,6 +28,12 @@ spec:
       - name: llm-runner
         image: DOCKER_IMAGE
         imagePullPolicy: Always
+        env:
+        - name: ENVIRONMENT
+          valueFrom:
+            secretKeyRef:
+              name: qna-secrets
+              key: ENVIRONMENT
         ports:
         - containerPort: 6000
           name: llm-runner
