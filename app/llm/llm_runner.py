@@ -1,7 +1,9 @@
 import asyncio
 import json
+import os
 import sys
 import time
+import uuid
 
 from kubernetes import client
 
@@ -10,8 +12,11 @@ from app.common.sqs_helper import SQSHelper
 from app.common.utils import get_project_id_and_document
 from app.constant import AWS
 
+# config.load_kube_config()   # Uncomment this line while testing in local
 queue_url = AWS.SQS.COMPLETED_TEXTRACT_QUEUE
 
+# Get namespace from environment variable
+NAMESPACE = os.getenv('ENVIRONMENT', 'default')
 
 async def create_job(message_body, logger):
     batch_v1 = client.BatchV1Api()
@@ -19,13 +24,15 @@ async def create_job(message_body, logger):
     # TODO: Update job manifest file as per the requirement
     job_manifest = json.load(open('llm/job_manifest.json', 'r'))
 
+    job_name = f"llm-job-{uuid.uuid1()}"
+    job_manifest['metadata']['name'] = job_name
+
     for env_variable in job_manifest['spec']['template']['spec']['containers'][0]['env']:
         if env_variable['name'] == 'INPUT_MESSAGE':
             env_variable['value'] = json.dumps(message_body)
 
-    namespace = 'default'  # TODO: Update namespace as per the requirement
-    batch_v1.create_namespaced_job(namespace=namespace, body=job_manifest)
-    logger.info(f'Job created in namespace: {namespace}')
+    batch_v1.create_namespaced_job(namespace=NAMESPACE, body=job_manifest)
+    logger.info(f'Job {job_name} created in namespace: {NAMESPACE}')
 
 
 async def runner():

@@ -5,6 +5,7 @@
     "name": "example-job"
   },
   "spec": {
+    "ttlSecondsAfterFinished": 5,
     "template": {
       "spec": {
         "containers": [
