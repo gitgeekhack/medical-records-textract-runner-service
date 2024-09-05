@@ -13,6 +13,7 @@ from app.common.sqs_helper import SQSHelper
 from app.constant import AWS
 
 # config.load_kube_config()   # Uncomment this line while testing in local
+config.load_incluster_config()
 queue_url = AWS.SQS.START_TEXTRACT_QUEUE
 
 # Get namespace from environment variable
