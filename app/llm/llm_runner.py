@@ -14,6 +14,7 @@ from app.common.utils import get_project_id_and_document
 from app.constant import AWS
 
 # config.load_kube_config()   # Uncomment this line while testing in local
+config.load_incluster_config()
 queue_url = AWS.SQS.COMPLETED_TEXTRACT_QUEUE
 
 # Get namespace from environment variable
