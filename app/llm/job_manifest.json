@@ -11,7 +11,7 @@
         "serviceAccountName": "runner-service-sa",
         "containers": [
           {
-            "name": "textract-container",
+            "name": "llm-container",
             "image": "",
             "env": [
               {
