@@ -5,6 +5,7 @@ import sys
 import time
 import traceback
 import uuid
+from typing import final
 
 from kubernetes import client, config
 
@@ -48,6 +49,10 @@ async def runner():
 
         if not NAMESPACE:
             logger.info('Configuration incomplete. Please configure ENVIRONMENT variable.')
+            exit(0)
+
+        if not LLM_IMAGE_NAME:
+            logger.info('Configuration incomplete. Please configure LLM_IMAGE_NAME variable.')
             exit(0)
 
         logger.info(f'Reading messages from queue: {queue_url.split("/")[-1]}')
