@@ -8,6 +8,7 @@
     "ttlSecondsAfterFinished": 5,
     "template": {
       "spec": {
+        "serviceAccountName": "runner-service-sa",
         "containers": [
           {
             "name": "example",
