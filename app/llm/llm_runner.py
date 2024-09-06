@@ -19,6 +19,7 @@ queue_url = AWS.SQS.COMPLETED_TEXTRACT_QUEUE
 
 # Get namespace from environment variable
 NAMESPACE = os.getenv('ENVIRONMENT')
+LLM_IMAGE_NAME = os.getenv('LLM_IMAGE_NAME')
 
 
 async def create_job(message_body, logger):
@@ -29,6 +30,8 @@ async def create_job(message_body, logger):
 
     job_name = f"llm-job-{uuid.uuid1()}"
     job_manifest['metadata']['name'] = job_name
+
+    job_manifest['spec']['template']['spec']['containers'][0]['image'] = LLM_IMAGE_NAME
 
     for env_variable in job_manifest['spec']['template']['spec']['containers'][0]['env']:
         if env_variable['name'] == 'INPUT_MESSAGE':

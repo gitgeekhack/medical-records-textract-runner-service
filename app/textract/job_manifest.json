@@ -11,8 +11,8 @@
         "serviceAccountName": "runner-service-sa",
         "containers": [
           {
-            "name": "example",
-            "image": "example-image",
+            "name": "textract-container",
+            "image": "",
             "env": [
               {
                 "name": "INPUT_MESSAGE",
