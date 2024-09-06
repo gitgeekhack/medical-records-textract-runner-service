@@ -5,7 +5,6 @@ import sys
 import time
 import traceback
 import uuid
-from typing import final
 
 from kubernetes import client, config
 
