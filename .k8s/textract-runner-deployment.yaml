@@ -35,6 +35,11 @@ spec:
             secretKeyRef:
               name: qna-secrets
               key: ENVIRONMENT
+        - name: TEXTRACT_IMAGE_NAME
+          valueFrom:
+            secretKeyRef:
+              name: qna-secrets
+              key: TEXTRACT_IMAGE_NAME
         ports:
         - containerPort: 6000
           name: textract-runner
