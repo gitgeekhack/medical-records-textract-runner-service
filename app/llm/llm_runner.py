@@ -50,6 +50,10 @@ async def runner():
             logger.info('Configuration incomplete. Please configure ENVIRONMENT variable.')
             exit(0)
 
+        if not LLM_IMAGE_NAME:
+            logger.info('Configuration incomplete. Please configure LLM_IMAGE_NAME variable.')
+            exit(0)
+
         logger.info(f'Reading messages from queue: {queue_url.split("/")[-1]}')
         while True:
             message_body, receipt_handle = await sqs_helper.consume_message(queue_url)
