@@ -18,6 +18,7 @@ queue_url = AWS.SQS.START_TEXTRACT_QUEUE
 
 # Get namespace from environment variable
 NAMESPACE = os.getenv('ENVIRONMENT')
+TEXTRACT_IMAGE_NAME = os.getenv('TEXTRACT_IMAGE_NAME')
 
 async def create_job(message_body, logger):
     batch_v1 = client.BatchV1Api()
@@ -27,6 +28,8 @@ async def create_job(message_body, logger):
 
     job_name = f"textract-job-{uuid.uuid1()}"
     job_manifest['metadata']['name'] = job_name
+
+    job_manifest['spec']['template']['spec']['containers'][0]['image'] = TEXTRACT_IMAGE_NAME
 
     for env_variable in job_manifest['spec']['template']['spec']['containers'][0]['env']:
         if env_variable['name'] == 'INPUT_MESSAGE':
