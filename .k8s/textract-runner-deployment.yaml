@@ -24,6 +24,7 @@ spec:
       labels:
         app: textract-runner
     spec:
+      serviceAccountName: runner-service-sa
       containers:
       - name: textract-runner
         image: DOCKER_IMAGE

@@ -1,0 +1,13 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: runner-service-role-binding
+  namespace: staging
+subjects:
+  - kind: ServiceAccount
+    name: runner-service-sa
+    namespace: staging
+roleRef:
+  kind: Role
+  name: runner-service-role
+  apiGroup: rbac.authorization.k8s.io

@@ -24,6 +24,7 @@ spec:
       labels:
         app: llm-runner
     spec:
+      serviceAccountName: runner-service-sa
       containers:
       - name: llm-runner
         image: DOCKER_IMAGE
