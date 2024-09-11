@@ -43,10 +43,10 @@ spec:
         ports:
         - containerPort: 6000
           name: textract-runner
-        # resources:
-        #   requests:
-        #     memory: "512Mi"
-        #     cpu: "256m"
-        #   limits:
-        #     memory: "512Mi"
-        #     cpu: "256m"
+        resources:
+          requests:
+            memory: "200Mi"
+            cpu: "200m"
+          limits:
+            memory: "512Mi"
+            cpu: "400m"
