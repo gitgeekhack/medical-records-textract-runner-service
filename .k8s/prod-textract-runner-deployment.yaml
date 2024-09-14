@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prod-textract-runner
+  namespace: production
+  labels:
+    app: prod-textract-runner
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prod-textract-runner
+  
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+
+  template:
+    metadata:
+      name: prod-textract-runner
+      labels:
+        app: prod-textract-runner
+    spec:
+      serviceAccountName: runner-service-sa
+      containers:
+      - name: prod-textract-runner
+        image: DOCKER_IMAGE
+        imagePullPolicy: Always
+        env:
+        - name: ENVIRONMENT
+          valueFrom:
+            secretKeyRef:
+              name: qna-secrets
+              key: ENVIRONMENT
+        - name: TEXTRACT_IMAGE_NAME
+          valueFrom:
+            secretKeyRef:
+              name: qna-secrets
+              key: TEXTRACT_IMAGE_NAME
+        ports:
+        - containerPort: 6000
+          name: prod-textract-runner
+        resources:
+          requests:
+            memory: "200Mi"
+            cpu: "200m"
+          limits:
+            memory: "512Mi"
+            cpu: "300m"

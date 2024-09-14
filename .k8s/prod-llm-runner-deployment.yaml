@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: prod-llm-runner
+  namespace: production
+  labels:
+    app: prod-llm-runner
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prod-llm-runner
+  
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+
+  template:
+    metadata:
+      name: prod-llm-runner
+      labels:
+        app: prod-llm-runner
+    spec:
+      serviceAccountName: runner-service-sa
+      containers:
+      - name: prod-llm-runner
+        image: DOCKER_IMAGE
+        imagePullPolicy: Always
+        env:
+        - name: ENVIRONMENT
+          valueFrom:
+            secretKeyRef:
+              name: prod-qna-secrets
+              key: ENVIRONMENT
+        - name: LLM_IMAGE_NAME
+          valueFrom:
+            secretKeyRef:
+              name: prod-qna-secrets
+              key: LLM_IMAGE_NAME
+        ports:
+        - containerPort: 6000
+          name: prod-llm-runner
+        resources:
+          requests:
+            memory: "200Mi"
+            cpu: "200m"
+          limits:
+            memory: "512Mi"
+            cpu: "300m"
