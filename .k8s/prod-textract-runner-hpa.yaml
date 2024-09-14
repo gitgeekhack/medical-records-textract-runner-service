@@ -1,13 +1,13 @@
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: prod-textract-runner-hpa
+  name: textract-runner-hpa
   namespace: production
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: prod-textract-runner
+    name: textract-runner
   minReplicas: 1
   maxReplicas: 10
   metrics:

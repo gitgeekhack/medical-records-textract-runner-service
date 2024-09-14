@@ -1,13 +1,13 @@
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: prod-llm-runner-hpa
+  name: llm-runner-hpa
   namespace: production
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: prod-llm-runner
+    name: llm-runner
   minReplicas: 1
   maxReplicas: 10
   metrics:

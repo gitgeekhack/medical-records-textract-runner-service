@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata: 
-  name: prod-llm-runner
+  name: llm-runner
   namespace: production
   labels:
-    app: prod-llm-runner
+    app: llm-runner
 
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: prod-llm-runner
+      app: llm-runner
   
   strategy:
     type: RollingUpdate
@@ -20,13 +20,13 @@ spec:
 
   template:
     metadata:
-      name: prod-llm-runner
+      name: llm-runner
       labels:
-        app: prod-llm-runner
+        app: llm-runner
     spec:
       serviceAccountName: runner-service-sa
       containers:
-      - name: prod-llm-runner
+      - name: llm-runner
         image: DOCKER_IMAGE
         imagePullPolicy: Always
         env:
@@ -42,7 +42,7 @@ spec:
               key: LLM_IMAGE_NAME
         ports:
         - containerPort: 6000
-          name: prod-llm-runner
+          name: llm-runner
         resources:
           requests:
             memory: "200Mi"
