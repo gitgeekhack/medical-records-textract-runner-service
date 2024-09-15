@@ -1,11 +1,11 @@
-name: Staging
+name: Staging-llm-runner
 on:
   push:
     branches: [ staging ]
   workflow_dispatch:
 
 env:
-  ECR_REPOSITORY: staging/llm-runner
+  ECR_REPOSITORY: llm-runner
   EKS_CLUSTER_NAME: demo-site 
   AWS_REGION: ap-south-1
 

@@ -1,11 +1,11 @@
-name: Staging
+name: Staging-textract-runner
 on:
   push:
     branches: [ staging ]
   workflow_dispatch:
 
 env:
-  ECR_REPOSITORY: staging/textract-runner
+  ECR_REPOSITORY: textract-runner
   EKS_CLUSTER_NAME: demo-site 
   AWS_REGION: ap-south-1
 
