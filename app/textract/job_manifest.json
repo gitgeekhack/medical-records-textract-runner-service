@@ -1,0 +1,28 @@
+{
+  "apiVersion": "batch/v1",
+  "kind": "Job",
+  "metadata": {
+    "name": "example-job"
+  },
+  "spec": {
+    "ttlSecondsAfterFinished": 5,
+    "template": {
+      "spec": {
+        "serviceAccountName": "runner-service-sa",
+        "containers": [
+          {
+            "name": "textract-container",
+            "image": "",
+            "env": [
+              {
+                "name": "INPUT_MESSAGE",
+                "value": ""
+              }
+            ]
+          }
+        ],
+        "restartPolicy": "Never"
+      }
+    }
+  }
+}
