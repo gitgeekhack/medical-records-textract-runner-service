@@ -14,7 +14,7 @@ from app.constant import AWS
 
 # config.load_kube_config()   # Uncomment this line while testing in local
 config.load_incluster_config()
-queue_url = AWS.SQS.START_TEXTRACT_QUEUE
+START_TEXTRACT_QUEUE_URL = os.getenv('START_TEXTRACT_QUEUE_URL')
 
 # Get namespace from environment variable
 NAMESPACE = os.getenv('ENVIRONMENT')
@@ -23,7 +23,6 @@ TEXTRACT_IMAGE_NAME = os.getenv('TEXTRACT_IMAGE_NAME')
 async def create_job(message_body, logger):
     batch_v1 = client.BatchV1Api()
 
-    # TODO: Update job manifest file as per the requirement
     job_manifest = json.load(open('app/textract/job_manifest.json', 'r'))
 
     job_name = f"textract-job-{uuid.uuid1()}"
@@ -47,25 +46,32 @@ async def runner():
         if not NAMESPACE:
             logger.info('Configuration incomplete. Please configure ENVIRONMENT variable.')
             exit(0)
-
         if not TEXTRACT_IMAGE_NAME:
             logger.info('Configuration incomplete. Please configure TEXTRACT_IMAGE_NAME variable.')
             exit(0)
+        if not START_TEXTRACT_QUEUE_URL:
+            logger.info('Configuration incomplete. Please configure START_TEXTRACT_QUEUE_URL variable.')
+            exit(0)
 
-        logger.info(f'Reading messages from queue: {queue_url.split("/")[-1]}')
+        logger.info(f'Reading messages from queue: {START_TEXTRACT_QUEUE_URL.split("/")[-1]}')
         while True:
-            message_body, receipt_handle = await sqs_helper.consume_message(queue_url)
-            if not (message_body and receipt_handle):
-                time.sleep(10)
-                continue
+            message_body, receipt_handle = await sqs_helper.consume_message(START_TEXTRACT_QUEUE_URL)
+            try:
+                if not (message_body and receipt_handle):
+                    time.sleep(10)
+                    continue
 
-            logger = get_cloudwatch_logger(project_id=message_body['document_path'].split('/')[2],
-                                           document_name=os.path.basename(message_body['document_path']),
-                                           log_stream_name=AWS.CloudWatch.TEXTRACT_RUNNER_STREAM)
-            logger.info(f'Message received from queue: {queue_url.split("/")[-1]}')
-            await create_job(message_body, logger)
-            await sqs_helper.delete_message(queue_url, receipt_handle)
-            sys.stdout.flush()
+                logger = get_cloudwatch_logger(project_id=message_body['document_path'].split('/')[2],
+                                               document_name=os.path.basename(message_body['document_path']),
+                                               log_stream_name=AWS.CloudWatch.TEXTRACT_RUNNER_STREAM)
+                logger.info(f'Message received from queue: {START_TEXTRACT_QUEUE_URL.split("/")[-1]}')
+                await create_job(message_body, logger)
+            except Exception as e:
+                logger.error('%s -> %s' % (e, traceback.format_exc()))
+            finally:
+                if receipt_handle:
+                    await sqs_helper.delete_message(START_TEXTRACT_QUEUE_URL, receipt_handle)
+                sys.stdout.flush()
     except Exception as e:
         logger.error('%s -> %s' % (e, traceback.format_exc()))
 
