@@ -35,6 +35,11 @@ spec:
             secretKeyRef:
               name: prod-qna-secrets
               key: ENVIRONMENT
+        - name: COMPLETED_TEXTRACT_QUEUE_URL
+          valueFrom:
+            secretKeyRef:
+              name: prod-qna-secrets
+              key: COMPLETED_TEXTRACT_QUEUE_URL
         - name: LLM_IMAGE_NAME
           valueFrom:
             secretKeyRef:

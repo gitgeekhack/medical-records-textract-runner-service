@@ -33,12 +33,17 @@ spec:
         - name: ENVIRONMENT
           valueFrom:
             secretKeyRef:
-              name: qna-secrets
+              name: prod-qna-secrets
               key: ENVIRONMENT
+        - name: START_TEXTRACT_QUEUE_URL
+          valueFrom:
+            secretKeyRef:
+              name: prod-qna-secrets
+              key: START_TEXTRACT_QUEUE_URL
         - name: TEXTRACT_IMAGE_NAME
           valueFrom:
             secretKeyRef:
-              name: qna-secrets
+              name: prod-qna-secrets
               key: TEXTRACT_IMAGE_NAME
         ports:
         - containerPort: 6000
