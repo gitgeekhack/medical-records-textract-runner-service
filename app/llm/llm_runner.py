@@ -35,6 +35,8 @@ async def create_job(message_body, logger):
     for env_variable in job_manifest['spec']['template']['spec']['containers'][0]['env']:
         if env_variable['name'] == 'INPUT_MESSAGE':
             env_variable['value'] = json.dumps(message_body)
+        elif env_variable['name'] == 'LLM_OUTPUT_QUEUE_URL':
+            env_variable['value'] = os.getenv('LLM_OUTPUT_QUEUE_URL')
 
     batch_v1.create_namespaced_job(namespace=NAMESPACE, body=job_manifest)
     logger.info(f'Job {job_name} created in namespace: {NAMESPACE}')
