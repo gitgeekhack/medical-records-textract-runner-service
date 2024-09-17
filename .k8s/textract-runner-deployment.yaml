@@ -35,6 +35,11 @@ spec:
             secretKeyRef:
               name: qna-secrets
               key: ENVIRONMENT
+        - name: START_TEXTRACT_QUEUE_URL
+          valueFrom:
+            secretKeyRef:
+              name: qna-secrets
+              key: START_TEXTRACT_QUEUE_URL
         - name: TEXTRACT_IMAGE_NAME
           valueFrom:
             secretKeyRef:
