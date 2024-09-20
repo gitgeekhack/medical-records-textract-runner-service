@@ -17,6 +17,10 @@
               {
                 "name": "INPUT_MESSAGE",
                 "value": ""
+              },
+              {
+                "name": "LLM_OUTPUT_QUEUE_URL",
+                "value": ""
               }
             ]
           }
