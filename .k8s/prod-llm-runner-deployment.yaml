@@ -33,18 +33,23 @@ spec:
         - name: ENVIRONMENT
           valueFrom:
             secretKeyRef:
-              name: prod-qna-secrets
+              name: qna-secrets
               key: ENVIRONMENT
         - name: COMPLETED_TEXTRACT_QUEUE_URL
           valueFrom:
             secretKeyRef:
-              name: prod-qna-secrets
+              name: qna-secrets
               key: COMPLETED_TEXTRACT_QUEUE_URL
         - name: LLM_IMAGE_NAME
           valueFrom:
             secretKeyRef:
-              name: prod-qna-secrets
+              name: qna-secrets
               key: LLM_IMAGE_NAME
+        - name: LLM_OUTPUT_QUEUE_URL
+          valueFrom:
+            secretKeyRef:
+              name: qna-secrets
+              key: LLM_OUTPUT_QUEUE_URL
         ports:
         - containerPort: 6000
           name: llm-runner
