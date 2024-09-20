@@ -33,18 +33,34 @@ spec:
         - name: ENVIRONMENT
           valueFrom:
             secretKeyRef:
-              name: prod-qna-secrets
+              name: qna-secrets
               key: ENVIRONMENT
         - name: START_TEXTRACT_QUEUE_URL
           valueFrom:
             secretKeyRef:
-              name: prod-qna-secrets
+              name: qna-secrets
               key: START_TEXTRACT_QUEUE_URL
         - name: TEXTRACT_IMAGE_NAME
           valueFrom:
             secretKeyRef:
-              name: prod-qna-secrets
+              name: qna-secrets
               key: TEXTRACT_IMAGE_NAME
+        - name: LLM_OUTPUT_QUEUE_URL
+          valueFrom:
+            secretKeyRef:
+              name: qna-secrets
+              key: LLM_OUTPUT_QUEUE_URL
+        - name: SNS_TOPIC_ARN
+          valueFrom:
+            secretKeyRef:
+              name: qna-secrets
+              key: SNS_TOPIC_ARN
+        - name: ROLE_ARN
+          valueFrom:
+            secretKeyRef:
+              name: qna-secrets
+              key: ROLE_ARN
+
         ports:
         - containerPort: 6000
           name: textract-runner
