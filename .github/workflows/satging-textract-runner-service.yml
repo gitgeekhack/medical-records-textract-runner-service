@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 env:
-  ECR_REPOSITORY: textract-runner
+  ECR_REPOSITORY: staging/textract-runner
   EKS_CLUSTER_NAME: demo-site 
   AWS_REGION: ap-south-1
 
