@@ -10,8 +10,12 @@ from kubernetes import client, config
 
 from app.common.cloudwatch_helper import get_cloudwatch_logger
 from app.common.sqs_helper import SQSHelper
-from app.constant import AWS
+from app.constant import AWS, MedicalInsights
+from app.common.s3_utils import S3Utils
+from app.common.utils import get_page_count
+from app.service.helper.pdf_splitter import split_pdf_by_size
 
+s3_utils = S3Utils()
 # config.load_kube_config()   # Uncomment this line while testing in local
 config.load_incluster_config()
 START_TEXTRACT_QUEUE_URL = os.getenv('START_TEXTRACT_QUEUE_URL')
@@ -19,6 +23,7 @@ START_TEXTRACT_QUEUE_URL = os.getenv('START_TEXTRACT_QUEUE_URL')
 # Get namespace from environment variable
 NAMESPACE = os.getenv('ENVIRONMENT')
 TEXTRACT_IMAGE_NAME = os.getenv('TEXTRACT_IMAGE_NAME')
+
 
 async def create_job(message_body, logger):
     batch_v1 = client.BatchV1Api()
@@ -62,16 +67,32 @@ async def runner():
         logger.info(f'Reading messages from queue: {START_TEXTRACT_QUEUE_URL.split("/")[-1]}')
         while True:
             message_body, receipt_handle = await sqs_helper.consume_message(START_TEXTRACT_QUEUE_URL)
+            document_path = message_body.get('document_path', '')
+            document_size = await s3_utils.get_file_size(AWS.S3.S3_BUCKET, document_path)
+            document_pages = await get_page_count(document_path)
             try:
                 if not (message_body and receipt_handle):
                     time.sleep(10)
                     continue
 
-                logger = get_cloudwatch_logger(project_id=message_body['document_path'].split('/')[2],
-                                               document_name=os.path.basename(message_body['document_path']),
-                                               log_stream_name=AWS.CloudWatch.TEXTRACT_RUNNER_STREAM)
-                logger.info(f'Message received from queue: {START_TEXTRACT_QUEUE_URL.split("/")[-1]}')
-                await create_job(message_body, logger)
+                if document_size > MedicalInsights.MAX_SIZE_MB or document_pages > MedicalInsights.MAX_PAGE_LIMIT:
+                    start_time = time.time()
+                    logger.info("PDF Splitting is started...")
+                    pdf_splitter = await split_pdf_by_size(document_path, document_size, document_pages)
+                    logger.info(f"PDF Splitting is completed in {time.time() - start_time} seconds.")
+
+                    for file_path in pdf_splitter:
+                        logger = get_cloudwatch_logger(project_id=file_path.split('/')[2],
+                                                       document_name=os.path.basename(file_path),
+                                                       log_stream_name=AWS.CloudWatch.TEXTRACT_RUNNER_STREAM)
+                        logger.info(f'Message received from queue: {START_TEXTRACT_QUEUE_URL.split("/")[-1]}')
+                        await create_job(file_path, logger)
+                else:
+                    logger = get_cloudwatch_logger(project_id=document_path.split('/')[2],
+                                                   document_name=os.path.basename(document_path),
+                                                   log_stream_name=AWS.CloudWatch.TEXTRACT_RUNNER_STREAM)
+                    logger.info(f'Message received from queue: {START_TEXTRACT_QUEUE_URL.split("/")[-1]}')
+                    await create_job(message_body, logger)
             except Exception as e:
                 logger.error('%s -> %s' % (e, traceback.format_exc()))
             finally:
