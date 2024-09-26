@@ -16,7 +16,7 @@ class AWS:
 
 class MedicalInsights:
     MAX_PAGE_LIMIT = 3000
-    MAX_SIZE_MB = 480
+    MAX_SIZE_MB = 500
     TEXTRACT_FOLDER_NAME = "textract_response"
     SPLIT_DOCUMENT_JSON_FOLDER = "split_documents_json"
     LOCAL_JSON_PATH = 'static/json_files/'

@@ -40,9 +40,6 @@ async def merged_json_file(local_json_path, json_path):
     with open(output_json_path, 'rb') as f:
         file_data = f.read()
 
-    if os.path.exists(output_json_path):
-        os.remove(output_json_path)
-
     upload_json_path = os.path.join(json_path.split('textract_response')[0], 'textract_response', output_json_filename)
     await s3_utils.upload_object(AWS.S3.S3_BUCKET, upload_json_path, file_data)
 
