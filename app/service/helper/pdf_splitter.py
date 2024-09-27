@@ -8,7 +8,7 @@ s3_utils = S3Utils()
 logger = get_cloudwatch_logger(log_stream_name=AWS.CloudWatch.LLM_RUNNER_STREAM)
 
 
-async def split_pdf_by_size(document_path, document_size, document_pages):
+async def split_pdf(document_path, document_size, document_pages):
     document_name = os.path.basename(document_path)
     local_pdf_path = os.path.join(MedicalInsights.STATIC_FOLDER_PATH, document_name)
     await s3_utils.download_object(AWS.S3.S3_BUCKET, document_path, local_pdf_path)
@@ -69,9 +69,6 @@ async def split_pdf_by_size(document_path, document_size, document_pages):
         await s3_utils.upload_object(AWS.S3.S3_BUCKET, s3_path, file_object)
         s3_paths.append(s3_path)
 
-        logger.info(f"Uploaded {temp_file} to S3 at {s3_path}")
-
-    logger.info("PDF splitting and upload complete.")
     for temp_file in temp_files:
         if os.path.exists(temp_file):
             os.remove(temp_file)
@@ -91,7 +88,6 @@ def reduce_pdf_size(temp_file, output_dir, max_size_mb):
 
     while max_pages_per_part > MedicalInsights.MAX_PAGE_LIMIT or (max_pages_per_part * avg_page_size) > max_size_mb:
         max_pages_per_part = max_pages_per_part // 2
-        logger.info(f"Further reducing pages per part: {max_pages_per_part}")
 
     while start_page < total_pages:
         remaining_pages = total_pages - start_page
@@ -112,12 +108,10 @@ def reduce_pdf_size(temp_file, output_dir, max_size_mb):
         part_size_mb = os.path.getsize(temp_output) / (1024 * 1024)
 
         if part_size_mb > max_size_mb:
-            logger.info(f"Part {temp_output} exceeds size limit. Further splitting required.")
             reduce_pdf_size(temp_output, output_dir, max_size_mb)
         else:
             final_output = os.path.join(output_dir, temp_file.replace("temp_", "part_"))
             os.rename(temp_output, final_output)
-            logger.info(f"Created {final_output} with size: {os.path.getsize(final_output) / (1024 * 1024):.2f} MB")
 
         start_page = end_page
         part_num += 1

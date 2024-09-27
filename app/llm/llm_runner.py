@@ -21,7 +21,7 @@ from app.service.helper.json_merger import merged_json_file
 config.load_incluster_config()
 
 
-class LlmRunner:
+class LLMRunner:
     def __init__(self):
         self.s3_utils = S3Utils()
         self.COMPLETED_TEXTRACT_QUEUE_URL = os.getenv('COMPLETED_TEXTRACT_QUEUE_URL')
@@ -50,7 +50,8 @@ class LlmRunner:
         batch_v1.create_namespaced_job(namespace=self.NAMESPACE, body=job_manifest)
         self.logger.info(f'Job {job_name} created in namespace: {self.NAMESPACE}')
 
-    async def process_splitted_files(self, message_body, file_path):
+    async def process_splitted_pdf(self, message_body, file_path):
+        original_file_path = '/'.join(file_path.split('/')[:-3]) + '/' + file_path.split('/')[-2].rsplit('_', 1)[0] + '.pdf'
         project_id_path = os.path.join(*file_path.split('/')[:3])
         pdf_name_without_extension = os.path.splitext(os.path.basename(file_path))[0]
         pdf_name = re.sub(r'_\d+_to_\d+$', '', pdf_name_without_extension)
@@ -77,22 +78,20 @@ class LlmRunner:
             if os.path.exists(local_json_path):
                 shutil.rmtree(local_json_path)
 
-            project_id, document_name = await get_project_id_and_document(message_body['DocumentLocation']['S3ObjectName'])
-            self.logger = get_cloudwatch_logger(project_id=project_id, document_name=document_name, log_stream_name=AWS.CloudWatch.LLM_RUNNER_STREAM)
-            textract_json_path = {"textract_json_path": merged_s3_json_path, "document_path": file_path}
+            textract_json_path = {"textract_json_path": merged_s3_json_path, "document_path": original_file_path}
             json_data = json.dumps(textract_json_path)
+
             await self.create_job(json_data)
         else:
             self.logger.error(f"PDF count ({pdf_count}) does not match JSON count ({json_count}) for {file_path}.")
 
-    async def process_normal_file(self, message_body, file_path, pdf_name):
+    async def process_single_pdf(self, message_body, file_path, pdf_name):
         s3_textract_path = os.path.join(os.path.dirname(os.path.dirname(file_path)), MedicalInsights.TEXTRACT_FOLDER_NAME, f'{pdf_name}_text.json')
         await self.textract_helper.get_page_wise_text(message_body, s3_textract_path)
 
-        project_id, document_name = await get_project_id_and_document(message_body['DocumentLocation']['S3ObjectName'])
-        self.logger = get_cloudwatch_logger(project_id=project_id, document_name=document_name, log_stream_name=AWS.CloudWatch.LLM_RUNNER_STREAM)
         textract_json_path = {"textract_json_path": s3_textract_path, "document_path": file_path}
         json_data = json.dumps(textract_json_path)
+
         await self.create_job(json_data)
 
     async def runner(self):
@@ -111,6 +110,8 @@ class LlmRunner:
             while True:
                 message_body, receipt_handle = await self.sqs_helper.consume_message(self.COMPLETED_TEXTRACT_QUEUE_URL)
                 self.logger.info(f'Message received from queue: {self.COMPLETED_TEXTRACT_QUEUE_URL.split("/")[-1]}')
+                project_id, document_name = await get_project_id_and_document(message_body['DocumentLocation']['S3ObjectName'])
+                self.logger = get_cloudwatch_logger(project_id=project_id, document_name=document_name, log_stream_name=AWS.CloudWatch.LLM_RUNNER_STREAM)
                 try:
                     if not (message_body and receipt_handle):
                         time.sleep(10)
@@ -123,9 +124,9 @@ class LlmRunner:
                     pdf_name = os.path.basename(file_path)
 
                     if '/split_documents/' in file_path:
-                        await self.process_splitted_files(message_body, file_path)
+                        await self.process_splitted_pdf(message_body, file_path)
                     else:
-                        await self.process_normal_file(message_body, file_path, pdf_name)
+                        await self.process_single_pdf(message_body, file_path, pdf_name)
                 except Exception as e:
                     self.logger.error('%s -> %s' % (e, traceback.format_exc()))
                 finally:
@@ -137,5 +138,5 @@ class LlmRunner:
 
 
 if __name__ == '__main__':
-    runner = LlmRunner()
+    runner = LLMRunner()
     asyncio.run(runner.runner())

@@ -13,7 +13,7 @@ from app.common.sqs_helper import SQSHelper
 from app.constant import AWS, MedicalInsights
 from app.common.s3_utils import S3Utils
 from app.common.utils import get_page_count
-from app.service.helper.pdf_splitter import split_pdf_by_size
+from app.service.helper.pdf_splitter import split_pdf
 
 # config.load_kube_config()   # Uncomment this line while testing in local
 config.load_incluster_config()
@@ -55,7 +55,7 @@ class TextractRunner:
         start_time = time.time()
         self.logger.info("PDF Splitting is started...")
 
-        pdf_splitter = await split_pdf_by_size(document_path, document_size, document_pages)
+        pdf_splitter = await split_pdf(document_path, document_size, document_pages)
         self.logger.info(f"PDF Splitting is completed in {time.time() - start_time} seconds.")
 
         for file_path in pdf_splitter:
