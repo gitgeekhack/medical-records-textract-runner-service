@@ -28,7 +28,7 @@ class LLMRunner:
         self.NAMESPACE = os.getenv('ENVIRONMENT')
         self.LLM_IMAGE_NAME = os.getenv('LLM_IMAGE_NAME')
         self.logger = get_cloudwatch_logger(log_stream_name=AWS.CloudWatch.TEXTRACT_RUNNER_STREAM)
-        self.textract_helper = TextractHelper(self.logger)
+        self.textract_helper = None
         self.sqs_helper = SQSHelper()
 
     async def create_job(self, s3_json_path):
@@ -83,7 +83,7 @@ class LLMRunner:
 
             await self.create_job(json_data)
         else:
-            self.logger.error(f"PDF count ({pdf_count}) does not match JSON count ({json_count}) for {file_path}.")
+            self.logger.info(f"{json_count}/{pdf_count} documents processed by Textract.")
 
     async def process_single_pdf(self, message_body, file_path, pdf_name):
         s3_textract_path = os.path.join(os.path.dirname(os.path.dirname(file_path)), MedicalInsights.TEXTRACT_FOLDER_NAME, f'{pdf_name}_text.json')
@@ -112,6 +112,7 @@ class LLMRunner:
                 self.logger.info(f'Message received from queue: {self.COMPLETED_TEXTRACT_QUEUE_URL.split("/")[-1]}')
                 project_id, document_name = await get_project_id_and_document(message_body['DocumentLocation']['S3ObjectName'])
                 self.logger = get_cloudwatch_logger(project_id=project_id, document_name=document_name, log_stream_name=AWS.CloudWatch.LLM_RUNNER_STREAM)
+                self.textract_helper = TextractHelper(self.logger)
                 try:
                     if not (message_body and receipt_handle):
                         time.sleep(10)
