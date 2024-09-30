@@ -62,8 +62,7 @@ class TextractRunner:
             self.logger = get_cloudwatch_logger(project_id=file_path.split('/')[2],
                                                 document_name=os.path.basename(file_path),
                                                 log_stream_name=AWS.CloudWatch.TEXTRACT_RUNNER_STREAM)
-            message_body_path = {"document_path": file_path}
-            message_body = json.dumps(message_body_path)
+            message_body = {"document_path": file_path}
             await self.create_job(message_body)
 
     async def process_single_pdf(self, document_path, message_body):
