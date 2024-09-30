@@ -2,14 +2,13 @@ import os
 import fitz
 from app.constant import AWS, MedicalInsights
 from app.common.s3_utils import S3Utils
-from app.common.cloudwatch_helper import get_cloudwatch_logger
 
 s3_utils = S3Utils()
-logger = get_cloudwatch_logger(log_stream_name=AWS.CloudWatch.LLM_RUNNER_STREAM)
 
 
 async def split_pdf(document_path, document_size, document_pages):
     document_name = os.path.basename(document_path)
+    document_name_without_extension = os.path.splitext(document_name)[0]
     local_pdf_path = os.path.join(MedicalInsights.STATIC_FOLDER_PATH, document_name)
     await s3_utils.download_object(AWS.S3.S3_BUCKET, document_path, local_pdf_path)
 
@@ -44,7 +43,7 @@ async def split_pdf(document_path, document_size, document_pages):
 
         writer.insert_pdf(pdf_document, from_page=start_page, to_page=end_page - 1)
 
-        temp_output = os.path.join(output_dir, f"{document_name}_{start_page + 1}_to_{end_page}.pdf")
+        temp_output = os.path.join(output_dir, f"{document_name_without_extension}_{start_page + 1}_to_{end_page}.pdf")
         writer.save(temp_output)
         temp_files.append(temp_output)
 
@@ -61,8 +60,7 @@ async def split_pdf(document_path, document_size, document_pages):
 
         # Upload files to s3
         directory_path = os.path.dirname(document_path)
-        document_name = os.path.splitext(document_name)[0]
-        s3_folder_path = os.path.join(directory_path, 'split_documents', document_name)
+        s3_folder_path = os.path.join(directory_path, 'split_documents', document_name_without_extension)
         s3_path = os.path.join(s3_folder_path, os.path.basename(temp_file))
         with open(temp_file, 'rb') as f:
             file_object = f.read()
