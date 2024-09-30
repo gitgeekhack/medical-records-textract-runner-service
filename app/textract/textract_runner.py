@@ -63,6 +63,7 @@ class TextractRunner:
                                                 document_name=os.path.basename(file_path),
                                                 log_stream_name=AWS.CloudWatch.TEXTRACT_RUNNER_STREAM)
             message_body = {"document_path": file_path}
+            self.logger.info(f"Create Job with Split PDF: {message_body}")
             await self.create_job(message_body)
 
     async def process_single_pdf(self, document_path, message_body):
@@ -70,6 +71,8 @@ class TextractRunner:
         self.logger = get_cloudwatch_logger(project_id=document_path.split('/')[2],
                                             document_name=os.path.basename(document_path),
                                             log_stream_name=AWS.CloudWatch.TEXTRACT_RUNNER_STREAM)
+
+        self.logger.info(f"Create Job without Split PDF: {message_body}")
         await self.create_job(message_body)
 
     async def process_message(self, message_body, receipt_handle):
@@ -104,6 +107,7 @@ class TextractRunner:
             while True:
                 message_body, receipt_handle = await self.sqs_helper.consume_message(self.START_TEXTRACT_QUEUE_URL)
                 self.logger.info(f'Message received from queue: {self.START_TEXTRACT_QUEUE_URL.split("/")[-1]}')
+                self.logger.info(f"Message body from Queue: {message_body}")
                 if not (message_body and receipt_handle):
                     time.sleep(10)
                     continue

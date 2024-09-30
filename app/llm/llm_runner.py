@@ -110,6 +110,8 @@ class LLMRunner:
             while True:
                 message_body, receipt_handle = await self.sqs_helper.consume_message(self.COMPLETED_TEXTRACT_QUEUE_URL)
                 self.logger.info(f'Message received from queue: {self.COMPLETED_TEXTRACT_QUEUE_URL.split("/")[-1]}')
+                self.logger.info(f"Message Received from Queue: {message_body}")
+
                 project_id, document_name = await get_project_id_and_document(message_body['DocumentLocation']['S3ObjectName'])
                 self.logger = get_cloudwatch_logger(project_id=project_id, document_name=document_name, log_stream_name=AWS.CloudWatch.LLM_RUNNER_STREAM)
                 self.textract_helper = TextractHelper(self.logger)
