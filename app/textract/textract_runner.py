@@ -106,12 +106,12 @@ class TextractRunner:
             self.logger.info(f'Reading messages from queue: {self.START_TEXTRACT_QUEUE_URL.split("/")[-1]}')
             while True:
                 message_body, receipt_handle = await self.sqs_helper.consume_message(self.START_TEXTRACT_QUEUE_URL)
-                self.logger.info(f'Message received from queue: {self.START_TEXTRACT_QUEUE_URL.split("/")[-1]}')
-                self.logger.info(f"Message body from Queue: {message_body}")
                 if not (message_body and receipt_handle):
                     time.sleep(10)
                     continue
 
+                self.logger.info(f'Message received from queue: {self.START_TEXTRACT_QUEUE_URL.split("/")[-1]}')
+                self.logger.info(f"Message body from Queue: {message_body}")
                 await self.process_message(message_body, receipt_handle)
 
         except Exception as e:

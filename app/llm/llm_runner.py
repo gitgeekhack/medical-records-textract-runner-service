@@ -109,16 +109,16 @@ class LLMRunner:
             self.logger.info(f'Reading messages from queue: {self.COMPLETED_TEXTRACT_QUEUE_URL.split("/")[-1]}')
             while True:
                 message_body, receipt_handle = await self.sqs_helper.consume_message(self.COMPLETED_TEXTRACT_QUEUE_URL)
-                self.logger.info(f'Message received from queue: {self.COMPLETED_TEXTRACT_QUEUE_URL.split("/")[-1]}')
-                self.logger.info(f"Message Received from Queue: {message_body}")
+                if not (message_body and receipt_handle):
+                    time.sleep(10)
+                    continue
 
-                project_id, document_name = await get_project_id_and_document(message_body['DocumentLocation']['S3ObjectName'])
-                self.logger = get_cloudwatch_logger(project_id=project_id, document_name=document_name, log_stream_name=AWS.CloudWatch.LLM_RUNNER_STREAM)
-                self.textract_helper = TextractHelper(self.logger)
+                self.logger.info(f'Message received from queue: {self.COMPLETED_TEXTRACT_QUEUE_URL.split("/")[-1]}')
+                self.logger.info(f"Message body from Queue: {message_body}")
                 try:
-                    if not (message_body and receipt_handle):
-                        time.sleep(10)
-                        continue
+                    project_id, document_name = await get_project_id_and_document(message_body['DocumentLocation']['S3ObjectName'])
+                    self.logger = get_cloudwatch_logger(project_id=project_id, document_name=document_name, log_stream_name=AWS.CloudWatch.LLM_RUNNER_STREAM)
+                    self.textract_helper = TextractHelper(self.logger)
 
                     if message_body['Status'] != "SUCCEEDED":
                         raise TextExtractionFailed
