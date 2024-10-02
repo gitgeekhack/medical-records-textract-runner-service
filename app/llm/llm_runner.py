@@ -27,7 +27,7 @@ class LLMRunner:
         self.COMPLETED_TEXTRACT_QUEUE_URL = os.getenv('COMPLETED_TEXTRACT_QUEUE_URL')
         self.NAMESPACE = os.getenv('ENVIRONMENT')
         self.LLM_IMAGE_NAME = os.getenv('LLM_IMAGE_NAME')
-        self.logger = get_cloudwatch_logger(log_stream_name=AWS.CloudWatch.TEXTRACT_RUNNER_STREAM)
+        self.logger = get_cloudwatch_logger(log_stream_name=AWS.CloudWatch.LLM_RUNNER_STREAM)
         self.textract_helper = None
         self.sqs_helper = SQSHelper()
 
