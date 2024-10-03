@@ -17,8 +17,8 @@ from app.service.helper.textract_helper import TextractHelper
 from app.common.s3_utils import S3Utils
 from app.service.helper.json_merger import merged_json_file
 
-# config.load_kube_config()   # Uncomment this line while testing in local
-config.load_incluster_config()
+config.load_kube_config()   # Uncomment this line while testing in local
+# config.load_incluster_config()
 
 
 class LLMRunner:
@@ -51,6 +51,7 @@ class LLMRunner:
         self.logger.info(f'Job {job_name} created in namespace: {self.NAMESPACE}')
 
     async def process_splitted_pdf(self, message_body, file_path):
+        self.logger.info("Processing started..")
         original_file_path = '/'.join(file_path.split('/')[:-3]) + '/' + file_path.split('/')[-2].rsplit('_', 1)[0] + '.pdf'
         project_id_path = os.path.join(*file_path.split('/')[:3])
         pdf_name_without_extension = os.path.splitext(os.path.basename(file_path))[0]
@@ -62,8 +63,10 @@ class LLMRunner:
         json_path = pdf_path.replace(MedicalInsights.JSON_PATH_REPLACE_OLD, MedicalInsights.JSON_PATH_REPLACE_NEW)
         local_json_path = MedicalInsights.LOCAL_JSON_PATH
 
+        self.logger.info("S3 download started")
         pdf_count = await self.s3_utils.get_s3_path_object_count(AWS.S3.S3_BUCKET, pdf_path)
         json_count = await self.s3_utils.get_s3_path_object_count(AWS.S3.S3_BUCKET, json_path)
+        self.logger.info("S3 download completed")
 
         if pdf_count == json_count:
             os.makedirs(local_json_path, exist_ok=True)
@@ -127,8 +130,10 @@ class LLMRunner:
                     pdf_name = os.path.basename(file_path)
 
                     if '/split_documents/' in file_path:
+                        self.logger.info("Processing split PDF")
                         await self.process_splitted_pdf(message_body, file_path)
                     else:
+                        self.logger.info("Processing single PDF")
                         await self.process_single_pdf(message_body, file_path, pdf_name)
                 except Exception as e:
                     self.logger.error('%s -> %s' % (e, traceback.format_exc()))
