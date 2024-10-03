@@ -17,8 +17,8 @@ from app.service.helper.textract_helper import TextractHelper
 from app.common.s3_utils import S3Utils
 from app.service.helper.json_merger import merged_json_file
 
-config.load_kube_config()   # Uncomment this line while testing in local
-# config.load_incluster_config()
+# config.load_kube_config()   # Uncomment this line while testing in local
+config.load_incluster_config()
 
 
 class LLMRunner:
