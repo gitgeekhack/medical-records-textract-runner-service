@@ -15,20 +15,25 @@ class TextractHelper:
         self.logger = logger
         self.s3_utils = S3Utils()
 
-    async def get_text(self, job_id, page_wise_text={}, next_token=None):
-        if next_token:
-            textract_response = textract_client.get_document_text_detection(JobId=job_id, NextToken=next_token)
-        else:
-            textract_response = textract_client.get_document_text_detection(JobId=job_id)
+    async def get_text(self, job_id):
+        page_wise_text = {}
+        next_token = None
 
-        for block in textract_response['Blocks']:
-            if block['BlockType'] == 'LINE':
-                page_wise_text['page_' + str(block['Page'])] = (
-                        page_wise_text.get('page_' + str(block['Page']), '') + block['Text'] + ' ')
+        while True:
+            if next_token:
+                textract_response = textract_client.get_document_text_detection(JobId=job_id, NextToken=next_token)
+            else:
+                textract_response = textract_client.get_document_text_detection(JobId=job_id)
 
-        if 'NextToken' in textract_response:
-            await self.get_text(job_id, page_wise_text, textract_response['NextToken'])
+            for block in textract_response['Blocks']:
+                if block['BlockType'] == 'LINE':
+                    page_key = 'page_' + str(block['Page'])
+                    page_wise_text[page_key] = page_wise_text.get(page_key, '') + block['Text'] + ' '
 
+            if 'NextToken' in textract_response:
+                next_token = textract_response['NextToken']
+            else:
+                break
         return page_wise_text
 
     async def get_page_wise_text(self, input_message, s3_textract_path):
