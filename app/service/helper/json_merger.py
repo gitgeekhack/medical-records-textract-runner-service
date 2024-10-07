@@ -1,5 +1,4 @@
 import os
-import re
 import json
 from app.constant import AWS
 from app.common.s3_utils import S3Utils
@@ -8,27 +7,27 @@ s3_utils = S3Utils()
 
 
 async def merged_json_file(local_json_path, json_path):
-    merged_json = {}
-    page_counter = 1
+    sorted_paths = sorted(os.listdir(local_json_path))
 
-    for filename in sorted(os.listdir(local_json_path)):
+    file_path = os.path.join(local_json_path, sorted_paths[0])
+    with open(file_path, 'r') as file:
+        merged_json = json.load(file)
+
+    page_counter = len(merged_json)
+
+    for file_idx in range(1, len(sorted_paths)):
+        filename = sorted_paths[file_idx]
+
         if filename.endswith('.json'):
-            match = re.search(r'_(\d+)_to_(\d+)_', filename)
-            if match:
-                start_page = int(match.group(1))
-                end_page = int(match.group(2))
+            file_path = os.path.join(local_json_path, filename)
+            with open(file_path, 'r') as file:
+                data = json.load(file)
 
-                num_pages = end_page - start_page + 1
-
-                file_path = os.path.join(local_json_path, filename)
-                with open(file_path, 'r') as file:
-                    data = json.load(file)
-                    for key in data.keys():
-                        if key.startswith('page_'):
-                            for i in range(num_pages):
-                                new_page_key = f'page_{page_counter}'
-                                merged_json[new_page_key] = data[key]
-                                page_counter += 1
+            for key in data.keys():
+                if key.startswith('page_'):
+                    page_counter += 1
+                    new_page_key = f'page_{page_counter}'
+                    merged_json[new_page_key] = data[key]
 
     document_name = os.path.basename(json_path)
     output_json_filename = f'{document_name}_text.json'
