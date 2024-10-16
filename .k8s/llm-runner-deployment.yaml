@@ -32,7 +32,7 @@ spec:
               - key: staging
                 operator: In
                 values:
-                - true
+                - "true"
       serviceAccountName: runner-service-sa
       containers:
       - name: llm-runner
