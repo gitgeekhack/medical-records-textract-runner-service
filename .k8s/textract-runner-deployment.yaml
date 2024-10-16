@@ -24,6 +24,15 @@ spec:
       labels:
         app: textract-runner
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: staging
+                operator: In
+                values:
+                - "true"
       serviceAccountName: runner-service-sa
       containers:
       - name: textract-runner
