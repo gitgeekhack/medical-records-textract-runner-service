@@ -1,5 +1,3 @@
-import os
-import io
 import json
 import pytest
 from app.common.sqs_helper import SQSHelper
@@ -9,7 +7,7 @@ from botocore.exceptions import ClientError, ParamValidationError
 pytest_plugins = ('pytest_asyncio',)
 
 
-class TestS3Utils:
+class TestSQSUtils:
     @pytest.mark.asyncio
     async def test_consume_message_with_valid_parameters(self, tmp_path):
         sqs = SQSHelper()

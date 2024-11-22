@@ -10,10 +10,15 @@ async def get_project_id_and_document(document_path):
     return project_id, document_name
 
 
-async def get_page_count(document_path):
+async def get_page_count(document_path, local_dir_path=None):
     s3_utils = S3Utils()
     document_name = os.path.splitext(os.path.basename(document_path))[0]
-    local_pdf_path = os.path.join(MedicalInsights.STATIC_FOLDER_PATH, f"{document_name}.pdf")
+
+    if not local_dir_path:
+        local_pdf_path = os.path.join(MedicalInsights.STATIC_FOLDER_PATH, f"{document_name}.pdf")
+    else:
+        local_pdf_path = os.path.join(local_dir_path, f"{document_name}.pdf")
+
     directory = os.path.dirname(local_pdf_path)
 
     if not os.path.exists(directory):
