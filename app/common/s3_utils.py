@@ -17,9 +17,11 @@ class S3Utils:
         with open(download_path, 'wb') as file:
             file.write(file_object)
 
-    async def download_multiple_files(self, bucket, key):
+    async def download_multiple_files(self, bucket, key, local_json_path=None):
         response = self.client.list_objects_v2(Bucket=bucket, Prefix=key)
-        local_json_path = MedicalInsights.LOCAL_JSON_PATH
+
+        if not local_json_path:
+            local_json_path = MedicalInsights.LOCAL_JSON_PATH
 
         if 'Contents' not in response:
             return
